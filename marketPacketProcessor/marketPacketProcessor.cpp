@@ -173,7 +173,7 @@ namespace marketPacket
             if (!maybeUpdateInfo.has_value())
             {
                 m_failReason.emplace("Poorly formed update");
-                break;
+                return;
             }
 
             auto [length, type] = maybeUpdateInfo.value();

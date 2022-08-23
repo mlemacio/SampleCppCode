@@ -7,7 +7,7 @@
 // Ideally, all these go into a config file
 constexpr std::string_view GENERATE_PATH = "./input.dat";
 constexpr std::string_view INPUT_PATH = "./input.dat";
-constexpr std::string_view OUTPUT_PATH = "./output.dat";
+constexpr std::string_view OUTPUT_PATH = "/Users/maciejmleczko/projects/SampleCppCode/output.dat";
 
 constexpr const size_t NUM_PACKETS_TO_GENERATE = 2;
 constexpr const size_t MAX_UPDATES_TO_GENERATE = 10;
