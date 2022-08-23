@@ -1,5 +1,5 @@
 # SampleCppCode
-An example written specifically for Disbelief games. 
+An example written specifically for employers. 
 
 A basic serializer/deserializer example in the form of a market data generation built on top of Bazel. 
 
