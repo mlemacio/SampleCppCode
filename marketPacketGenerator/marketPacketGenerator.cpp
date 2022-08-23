@@ -160,7 +160,7 @@ namespace marketPacket
     void marketPacketGenerator_t::resetPerRunVariables(size_t numPackets, size_t numMaxUpdates)
     {
         // Due to the way the struct is constructed, this number needs to stay in a certain range or we can't interpret it
-        if (numMaxUpdates >= std::numeric_limits<uint16_t>::max() / UPDATE_SIZE)
+        if (numMaxUpdates > MAX_UPDATES_ALLOWED_IN_PACKET)
         {
             m_failReason.emplace("Can't request that many updates in a packet");
             return;

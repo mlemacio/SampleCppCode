@@ -54,7 +54,7 @@ namespace marketPacket
     constexpr const size_t UPDATE_SIZE = sizeof(update_t);
     constexpr const size_t PACKET_HEADER_SIZE = sizeof(packetHeader_t);
     constexpr const size_t UPDATES_IN_WRITE_BUF = WRITE_BUFFER_SIZE / sizeof(trade_t);
-    constexpr const size_t MAX_UPDATES_ALLOWED_IN_PACKET = (std::numeric_limits<uint16_t>::max() / UPDATE_SIZE) - 1;
+    constexpr const size_t MAX_UPDATES_ALLOWED_IN_PACKET = (std::numeric_limits<decltype(marketPacket::packetHeader_t::packetLength)>::max() / UPDATE_SIZE) - 1;
 
     static_assert(READ_BUFFER_SIZE % UPDATE_SIZE == 0, "This just isn't going to be good if it's not aligned");
     static_assert(WRITE_BUFFER_SIZE % UPDATE_SIZE == 0, "This just isn't going to be good if it's not aligned");
