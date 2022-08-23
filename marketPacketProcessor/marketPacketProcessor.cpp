@@ -92,7 +92,7 @@ namespace marketPacket
             {
                 assert(false);
                 m_failReason.emplace("Invalid state. How?");
-                break;
+                return;
             }
             }
         }
@@ -203,7 +203,7 @@ namespace marketPacket
                 // You really shouldn't be able to get here
                 assert(false);
                 m_failReason.emplace("Poorly formed packet");
-                break;
+                return;
             }
             }
         }

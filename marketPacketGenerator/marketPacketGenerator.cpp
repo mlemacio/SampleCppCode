@@ -101,7 +101,7 @@ namespace marketPacket
             {
                 assert(false);
                 m_failReason.emplace("Invalid state. How?");
-                break;
+                return;
             }
             }
         }
