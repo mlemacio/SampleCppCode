@@ -169,14 +169,12 @@ namespace marketPacket
         {
             const std::byte *currBufferPos = m_readBuffer.data() + bufferOffset;
 
-            maybeUpdateInfo_t maybeUpdateInfo = isValidUpdatePtr(currBufferPos);
-            if (!maybeUpdateInfo.has_value())
+            auto [length, type] = isValidUpdatePtr(currBufferPos);
+            if (type == marketPacket::updateType_e::INVALID)
             {
                 m_failReason.emplace("Poorly formed update");
                 return;
             }
-
-            auto [length, type] = maybeUpdateInfo.value();
 
             // Mark down we've 'read' an update of somesort
             bufferOffset += length;
@@ -240,7 +238,7 @@ namespace marketPacket
         m_bodyBytesInterpreted = 0;
     }
 
-    marketPacketProcessor_t::maybeUpdateInfo_t marketPacketProcessor_t::isValidUpdatePtr(const std::byte *updatePtr)
+    std::pair<uint16_t, updateType_e> marketPacketProcessor_t::isValidUpdatePtr(const std::byte *updatePtr)
     {
         // Kind of by definition, the first 3 bytes have to be the same format
         const uint16_t length = *(reinterpret_cast<const int16_t *>(updatePtr));
@@ -249,10 +247,10 @@ namespace marketPacket
         // Is both the length and type something we'd expect?
         if (length == UPDATE_SIZE && (type == updateType_e::TRADE || type == updateType_e::QUOTE))
         {
-            return std::tuple(length, type);
+            return {length, type};
         }
 
-        return std::nullopt;
+        return {0, marketPacket::updateType_e::INVALID};
     }
 
     void marketPacketProcessor_t::appendTradePtrToStream(const trade_t *t)

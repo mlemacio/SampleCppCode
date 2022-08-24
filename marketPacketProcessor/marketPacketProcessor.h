@@ -50,8 +50,6 @@ namespace marketPacket
         const std::optional<std::string> &processNextPacket(const std::optional<size_t> &numPacketsToProcess = std::nullopt);
 
     private:
-        using maybeUpdateInfo_t = std::optional<std::tuple<uint16_t, updateType_e>>;
-
         /**
          * @brief Possible states for a processor to be in
          */
@@ -89,7 +87,7 @@ namespace marketPacket
          * @param updatePtr Ptr into read buffer on what we assume is the start to an update
          * @return If valid, a tuple containing the length and type of the update
          */
-        maybeUpdateInfo_t isValidUpdatePtr(const std::byte *updatePtr);
+        std::pair<uint16_t, updateType_e> isValidUpdatePtr(const std::byte *updatePtr);
 
         /**
          * @brief Certain variables need to be reset per run and/or per packet
