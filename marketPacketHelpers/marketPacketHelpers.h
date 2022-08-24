@@ -28,7 +28,7 @@ namespace marketPacket
         uint16_t priceLevel;
         uint64_t priceLevelSize;
         uint64_t timeOfDay;
-        char dynamicData[6];
+        std::byte dynamicData[6];
     } __attribute__((packed));
 
     struct trade_t
@@ -38,18 +38,18 @@ namespace marketPacket
         char symbol[SYMBOL_LENGTH];
         uint16_t tradeSize;
         uint64_t tradePrice;
-        char dynamicData[14];
+        std::byte dynamicData[14];
     } __attribute__((packed));
 
     struct update_t
     {
-        char data[32];
+        std::byte data[32];
     } __attribute__((packed));
 
     constexpr const size_t TYPE_OFFSET = 2;
 
-    constexpr const size_t READ_BUFFER_SIZE = 1024;
-    constexpr const size_t WRITE_BUFFER_SIZE = 1024;
+    constexpr const size_t READ_BUFFER_SIZE = 16384;
+    constexpr const size_t WRITE_BUFFER_SIZE = 16384;
 
     constexpr const size_t UPDATE_SIZE = sizeof(update_t);
     constexpr const size_t PACKET_HEADER_SIZE = sizeof(packetHeader_t);

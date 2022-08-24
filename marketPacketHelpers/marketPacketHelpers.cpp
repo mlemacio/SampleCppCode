@@ -13,9 +13,9 @@ namespace marketPacket
 
     std::string generateRandomSymbol()
     {
-        static const char alphanum[] = "0123456789"
-                                       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                       "abcdefghijklmnopqrstuvwxyz";
+        static constexpr const std::string_view alphanum = "0123456789"
+                                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                                 "abcdefghijklmnopqrstuvwxyz";
 
         std::string tmp_s;
         tmp_s.reserve(SYMBOL_LENGTH);
