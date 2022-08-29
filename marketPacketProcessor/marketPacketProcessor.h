@@ -47,7 +47,7 @@ namespace marketPacket
          *
          * @return If we didn't do any work, why
          */
-        const std::optional<std::string> &processNextPacket(const std::optional<size_t> &numPacketsToProcess = std::nullopt);
+        const std::optional<failReason_t> &processNextPacket(const std::optional<size_t> &numPacketsToProcess = std::nullopt);
 
     private:
         /**
@@ -87,7 +87,7 @@ namespace marketPacket
          * @param updatePtr Ptr into read buffer on what we assume is the start to an update
          * @return If valid, a tuple containing the length and type of the update
          */
-        std::pair<uint16_t, updateType_e> isValidUpdatePtr(const std::byte *updatePtr);
+        std::tuple<uint16_t, updateType_e> isValidUpdatePtr(const std::byte *updatePtr);
 
         /**
          * @brief Certain variables need to be reset per run and/or per packet
@@ -103,7 +103,7 @@ namespace marketPacket
         void appendTradePtrToStream(const trade_t *t);
 
         state_t m_state;                         // Current state of processor
-        std::optional<std::string> m_failReason; // If processNextPacket() returns false, the reason
+        std::optional<failReason_t> m_failReason; // If processNextPacket() returns false, the reason
 
         std::size_t m_numPacketsProcessed;           // In this run, how many packets have we seen so far
         std::optional<size_t> m_numPacketsToProcess; // If set, how many packets to try to read. Otherwise, go until failure

@@ -6,8 +6,8 @@
 namespace test
 {
     // Ideally, this goes into a config file
-    constexpr std::string_view GENERATE_PATH = "./generate_test.dat";
-    constexpr std::string_view OUTPUT_PATH = "./output_test.dat";
+    const std::string GENERATE_PATH = "./generate_test.dat";
+    const std::string OUTPUT_PATH = "./output_test.dat";
     constexpr const size_t MANY_PACKETS = 1000;
 
     marketPacket::marketPacketGenerator_t createDefaultGenerator()
@@ -23,7 +23,7 @@ namespace test
     TEST(marketPacketGeneratorTest, noInit)
     {
         marketPacket::marketPacketGenerator_t mpg = createDefaultGenerator();
-        EXPECT_EQ(mpg.generatePackets(1, 1).value(), "Generator is uninitialized");
+        EXPECT_EQ(mpg.generatePackets(1, 1).value(), marketPacket::UNINITIALIZED);
     }
 
     TEST(marketPacketGeneratorTest, doubleInit)
@@ -42,7 +42,7 @@ namespace test
 
     TEST(marketPacketGeneratorTest, tooManyUpdates)
     {
-        EXPECT_EQ(createDefaultGenerator().generatePackets(1, std::numeric_limits<size_t>::max()).value(), "Can't request that many updates in a packet");
+        EXPECT_EQ(createDefaultGenerator().generatePackets(1, std::numeric_limits<size_t>::max()).value(), marketPacket::TOO_MANY_UPDATES);
     }
 
     TEST(marketPacketGeneratorTest, onePacketoneUpdate)
@@ -63,7 +63,7 @@ namespace test
         mpp.initialize();
 
         EXPECT_FALSE(mpp.processNextPacket(1).has_value());
-        EXPECT_EQ(mpp.processNextPacket(1).value(), "End of file");
+        EXPECT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 
     TEST(marketPacketGeneratorTest, onePacketManyUpdate)
@@ -83,7 +83,7 @@ namespace test
         mpp.initialize();
 
         EXPECT_FALSE(mpp.processNextPacket(1).has_value());
-        EXPECT_EQ(mpp.processNextPacket(1).value(), "End of file");
+        EXPECT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 
     TEST(marketPacketGeneratorTest, manyPacketOneUpdate)
@@ -102,7 +102,7 @@ namespace test
         mpp.initialize();
 
         EXPECT_FALSE(mpp.processNextPacket(MANY_PACKETS).has_value());
-        EXPECT_EQ(mpp.processNextPacket(1).value(), "End of file");
+        EXPECT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 
     TEST(marketPacketGeneratorTest, manyPacketManyUpdate)
@@ -122,7 +122,7 @@ namespace test
         mpp.initialize();
 
         EXPECT_FALSE(mpp.processNextPacket(MANY_PACKETS).has_value());
-        EXPECT_EQ(mpp.processNextPacket(1).value(), "End of file");
+        EXPECT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 
     TEST(marketPacketGeneratorTest, multipleCalls)
@@ -147,7 +147,7 @@ namespace test
         mpp.initialize();
 
         EXPECT_FALSE(mpp.processNextPacket(NUM_CALLS).has_value());
-        EXPECT_EQ(mpp.processNextPacket(1).value(), "End of file");
+        EXPECT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 
     /**
@@ -170,6 +170,6 @@ namespace test
         mpp.initialize();
 
         EXPECT_FALSE(mpp.processNextPacket(NUM_PACKETS).has_value());
-        EXPECT_EQ(mpp.processNextPacket(1).value(), "End of file");
+        EXPECT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 }

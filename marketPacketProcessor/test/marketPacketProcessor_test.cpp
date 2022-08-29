@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <cstring>
 
 #include "marketPacketGenerator/marketPacketGenerator.h"
 #include "marketPacketHelpers/marketPacketHelpers.h"
@@ -7,8 +8,8 @@
 namespace test
 {
   // Ideally, all these go into a config file
-  constexpr std::string_view INPUT_PATH = "./input_test.dat";
-  constexpr std::string_view OUTPUT_PATH = "./output_test.dat";
+  const std::string INPUT_PATH = "./input_test.dat";
+  const std::string OUTPUT_PATH = "./output_test.dat";
 
   /**
    * @brief Create a Default Processor
@@ -22,9 +23,9 @@ namespace test
   {
     marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
 
-    std::optional<std::string> failReason = mpp.processNextPacket();
+    std::optional<marketPacket::failReason_t> failReason = mpp.processNextPacket();
     ASSERT_TRUE(failReason.has_value());
-    EXPECT_EQ(failReason.value(), "Processor is uninitialized");
+    EXPECT_EQ(failReason.value(), marketPacket::UNINITIALIZED);
   }
 
   TEST(marketPacketProcessorTest, doubleInit)
@@ -54,12 +55,12 @@ namespace test
   TEST(marketPacketProcessorTest, nonSensePacketHeader)
   {
     marketPacket::packetHeader_t ph{0, 0};
-    ASSERT_TRUE(std::ofstream(INPUT_PATH).write(reinterpret_cast<char *>(&ph), sizeof(ph)));
+    ASSERT_TRUE(std::ofstream(INPUT_PATH).write(reinterpret_cast<char *>(&ph), sizeof(ph)).good());
 
     marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
     mpp.initialize();
 
-    EXPECT_EQ(mpp.processNextPacket().value(), "Poorly formed packet header");
+    EXPECT_EQ(mpp.processNextPacket().value(), marketPacket::PACKET_HEADER_POORLY_FORMED);
   }
 
   TEST(marketPacketProcessorTest, shortPacketHeader)
@@ -70,7 +71,7 @@ namespace test
     marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
     mpp.initialize();
 
-    EXPECT_EQ(mpp.processNextPacket().value(), "Packet header read failed");
+    EXPECT_EQ(mpp.processNextPacket().value(), marketPacket::PACKET_HEADER_READ_FAILED);
   }
 
   TEST(marketPacketProcessorTest, badUpdateLength)
@@ -90,7 +91,7 @@ namespace test
     marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
     mpp.initialize();
 
-    ASSERT_EQ(mpp.processNextPacket().value(), "Poorly formed update");
+    ASSERT_EQ(mpp.processNextPacket().value(), marketPacket::UPDATE_POORLY_FORMED);
   }
 
   TEST(marketPacketProcessorTest, badUpdateType)
@@ -110,7 +111,7 @@ namespace test
     marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
     mpp.initialize();
 
-    ASSERT_EQ(mpp.processNextPacket().value(), "Poorly formed update");
+    ASSERT_EQ(mpp.processNextPacket().value(), marketPacket::UPDATE_POORLY_FORMED);
   }
 
   TEST(marketPacketProcessorTest, processOnePacketOneTrade)
@@ -118,9 +119,6 @@ namespace test
     std::string randomSymbol = marketPacket::generateRandomSymbol();
     uint16_t randomTradeSize = static_cast<uint16_t>(marketPacket::rand());
     uint64_t randomTradePrice = static_cast<uint64_t>(marketPacket::rand());
-
-    // This is the string we expect to get back with these values
-    std::string expectedStr("Trade: " + randomSymbol + " Size: " + std::to_string(randomTradeSize) + " Price: " + std::to_string(randomTradePrice) + '\n');
 
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::trade_t), 1};
     marketPacket::trade_t trade{
@@ -130,6 +128,9 @@ namespace test
         .tradePrice = randomTradePrice,
     };
     std::memcpy(trade.symbol, randomSymbol.c_str(), marketPacket::SYMBOL_LENGTH);
+
+    // This is the string we expect to get back with these values
+    std::string expectedStr(marketPacket::generateTradeString(&trade) + '\n');
 
     {
       std::ofstream genStream(INPUT_PATH);
@@ -175,7 +176,7 @@ namespace test
       mpp.initialize();
 
       ASSERT_FALSE(mpp.processNextPacket(1).has_value());
-      ASSERT_EQ(mpp.processNextPacket(1).value(), "End of file");
+      ASSERT_EQ(mpp.processNextPacket(1).value(), marketPacket::END_OF_FILE);
     }
 
     {
@@ -194,8 +195,6 @@ namespace test
     uint64_t randomTradePrice = static_cast<uint64_t>(marketPacket::rand());
 
     // This is the string we expect to get back with these values
-    std::string expectedStr("Trade: " + randomSymbol + " Size: " + std::to_string(randomTradeSize) + " Price: " + std::to_string(randomTradePrice) + '\n');
-
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::trade_t), 1};
     marketPacket::trade_t trade{
         .length = sizeof(marketPacket::trade_t),
@@ -205,8 +204,10 @@ namespace test
     };
     std::memcpy(trade.symbol, randomSymbol.c_str(), marketPacket::SYMBOL_LENGTH);
 
-    constexpr const size_t NUM_PACKETS_TO_WRITE = 6;
+    // This is the string we expect to get back with these values
+    std::string expectedStr(marketPacket::generateTradeString(&trade) + '\n');
 
+    constexpr const size_t NUM_PACKETS_TO_WRITE = 6;
     {
       std::ofstream genStream(INPUT_PATH);
 
@@ -226,7 +227,7 @@ namespace test
       ASSERT_FALSE(mpp.processNextPacket(1).has_value());
       ASSERT_FALSE(mpp.processNextPacket(2).has_value());
 
-      ASSERT_EQ(mpp.processNextPacket().value(), "End of file");
+      ASSERT_EQ(mpp.processNextPacket().value(), marketPacket::END_OF_FILE);
     }
 
     {
@@ -262,7 +263,7 @@ namespace test
       marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
       mpp.initialize();
 
-      ASSERT_EQ(mpp.processNextPacket().value(), "End of file");
+      ASSERT_EQ(mpp.processNextPacket().value(), marketPacket::END_OF_FILE);
     }
   }
 }

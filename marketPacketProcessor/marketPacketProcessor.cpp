@@ -21,7 +21,7 @@ namespace marketPacket
         m_state = state_t::CHECK_STREAM_VALIDITY;
     }
 
-    const std::optional<std::string> &marketPacketProcessor_t::processNextPacket(const std::optional<size_t> &numPacketsToProcess)
+    const std::optional<failReason_t> &marketPacketProcessor_t::processNextPacket(const std::optional<size_t> &numPacketsToProcess)
     {
         resetPerRunVariables(numPacketsToProcess);
 
@@ -91,7 +91,7 @@ namespace marketPacket
             default:
             {
                 assert(false);
-                m_failReason.emplace("Invalid state. How?");
+                m_failReason.emplace(INVALID_STATE);
                 return;
             }
             }
@@ -100,7 +100,7 @@ namespace marketPacket
 
     void marketPacketProcessor_t::uninitialized()
     {
-        m_failReason.emplace("Processor is uninitialized");
+        m_failReason.emplace(UNINITIALIZED);
         return;
     }
 
@@ -109,7 +109,7 @@ namespace marketPacket
         // Don't process, just return early
         if (!m_inputStream->is_open())
         {
-            m_failReason.emplace("Input stream isn't open");
+            m_failReason.emplace(INPUT_STREAM_CLOSED);
             return;
         }
 
@@ -119,11 +119,11 @@ namespace marketPacket
         {
             if (m_inputStream->eof())
             {
-                m_failReason.emplace("End of file");
+                m_failReason.emplace(END_OF_FILE);
             }
             else
             {
-                m_failReason.emplace("Stream is not good");
+                m_failReason.emplace(BAD_STREAM);
             }
             return;
         }
@@ -134,14 +134,14 @@ namespace marketPacket
         // Assume it's a packet header
         if (!(m_inputStream->read(reinterpret_cast<char *>(&m_packetHeader), PACKET_HEADER_SIZE)))
         {
-            m_failReason.emplace("Packet header read failed");
+            m_failReason.emplace(PACKET_HEADER_READ_FAILED);
             return;
         }
 
         // Probably not a good thing
         if (m_packetHeader.packetLength < PACKET_HEADER_SIZE)
         {
-            m_failReason.emplace("Poorly formed packet header");
+            m_failReason.emplace(PACKET_HEADER_POORLY_FORMED);
             return;
         }
 
@@ -158,7 +158,7 @@ namespace marketPacket
         // Read what needs to be read
         if (!(m_inputStream->read(reinterpret_cast<char *>(m_readBuffer.data()), validDataInBuffer)).good())
         {
-            m_failReason.emplace("Packet read failed");
+            m_failReason.emplace(PACKET_READ_FAILED);
             return;
         }
 
@@ -170,9 +170,9 @@ namespace marketPacket
             const std::byte *currBufferPos = m_readBuffer.data() + bufferOffset;
 
             auto [length, type] = isValidUpdatePtr(currBufferPos);
-            if (type == marketPacket::updateType_e::INVALID)
+            if (type == updateType_e::INVALID)
             {
-                m_failReason.emplace("Poorly formed update");
+                m_failReason.emplace(UPDATE_POORLY_FORMED);
                 return;
             }
 
@@ -200,7 +200,7 @@ namespace marketPacket
             {
                 // You really shouldn't be able to get here
                 assert(false);
-                m_failReason.emplace("Poorly formed packet");
+                m_failReason.emplace(UPDATE_POORLY_FORMED);
                 return;
             }
             }
@@ -238,7 +238,7 @@ namespace marketPacket
         m_bodyBytesInterpreted = 0;
     }
 
-    std::pair<uint16_t, updateType_e> marketPacketProcessor_t::isValidUpdatePtr(const std::byte *updatePtr)
+    std::tuple<uint16_t, updateType_e> marketPacketProcessor_t::isValidUpdatePtr(const std::byte *updatePtr)
     {
         // Kind of by definition, the first 3 bytes have to be the same format
         const uint16_t length = *(reinterpret_cast<const int16_t *>(updatePtr));
@@ -250,25 +250,21 @@ namespace marketPacket
             return {length, type};
         }
 
-        return {0, marketPacket::updateType_e::INVALID};
+        return {0, updateType_e::INVALID};
     }
 
+    /**
+     * std::format (C++20) would do a lot better here if it was available 
+     */
     void marketPacketProcessor_t::appendTradePtrToStream(const trade_t *t)
     {
-        // Could be done better with std::format, but C++20 isn't fully implemented
-        *m_outputStream << "Trade: ";
-
-        // This one is finicky since the char array isn't guaranteed to be null-terminated
-        m_outputStream->write(t->symbol, SYMBOL_LENGTH);
-
-        *m_outputStream << " Size: " << t->tradeSize;
-        *m_outputStream << " Price: " << t->tradePrice;
-        *m_outputStream << std::endl;
-
+        // We're relying that the outputStream knows how to buffer it's own writes
+        *m_outputStream << generateTradeString(t) << std::endl;
+        
         // This is just a weird case
         if (!m_outputStream->good())
         {
-            m_failReason.emplace("Failure in writing trade to stream");
+            m_failReason.emplace(TRADE_WRITE_FAILED);
         }
     }
 };

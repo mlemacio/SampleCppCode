@@ -46,7 +46,7 @@ namespace marketPacket
          *       It could... but if someone wants to do that, just throw it in a while loop
          *       I do not trust people to not screw up infinite generation as a default
          */
-        const std::optional<std::string> &generatePackets(size_t numPackets, size_t numMaxUpdates);
+        const std::optional<failReason_t> &generatePackets(size_t numPackets, size_t numMaxUpdates);
 
     private:
         /**
@@ -75,8 +75,8 @@ namespace marketPacket
         void resetPerRunVariables(size_t numPackets, size_t numMaxUpdates);
         void resetPerPacketVariables();
 
-        state_t m_state;                         // Current state of the generator
-        std::optional<std::string> m_failReason; // If populated, why we stopped generating
+        state_t m_state;                          // Current state of the generator
+        std::optional<failReason_t> m_failReason; // If populated, why we stopped generating
 
         size_t m_numPackets;        // Number of packets we should generate in this run
         size_t m_numPacketsWritten; // Number of packets we have written to the stream so far in this
@@ -85,11 +85,11 @@ namespace marketPacket
         uint16_t m_numUpdates;        // How many updates we expect to generate in a packet
         uint16_t m_numUpdatesWritten; // How many updates we have written so far
 
-        marketPacket::trade_t m_trade; // Trade to write
-        marketPacket::quote_t m_quote; // Quote to write
+        trade_t m_trade; // Trade to write
+        quote_t m_quote; // Quote to write
 
-        marketPacket::packetHeader_t m_ph;                                  // Header we write to the stream
-        std::array<marketPacket::update_t, UPDATES_IN_WRITE_BUF> m_updates; // Where we store the updates before we write
+        packetHeader_t m_ph;                                  // Header we write to the stream
+        std::array<update_t, UPDATES_IN_WRITE_BUF> m_updates; // Where we store the updates before we write
 
         std::shared_ptr<std::ofstream> m_oStream; // Output stream
     };

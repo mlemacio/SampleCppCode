@@ -18,34 +18,34 @@ namespace marketPacket
         if (m_state != state_t::UNINITIALIZED)
         {
             assert(false);
-            m_failReason.emplace("Uninitialized");
+            m_failReason.emplace(UNINITIALIZED);
             return;
         }
 
         // Ideally, these are random every time but we don't *need* it to be
         // And that'd slow down performance by a lot making a random one everytime
         // There are solutions to that, just none of them are simple
-        m_trade = marketPacket::trade_t{
-            .length = sizeof(marketPacket::trade_t),
-            .type = marketPacket::updateType_e::TRADE,
+        m_trade = trade_t{
+            .length = sizeof(trade_t),
+            .type = updateType_e::TRADE,
             .tradeSize = static_cast<uint16_t>(rand()),
             .tradePrice = static_cast<uint64_t>(rand()),
         };
 
-        m_quote = marketPacket::quote_t{
-            .length = sizeof(marketPacket::quote_t),
-            .type = marketPacket::updateType_e::QUOTE,
+        m_quote = quote_t{
+            .length = sizeof(quote_t),
+            .type = updateType_e::QUOTE,
             .priceLevel = static_cast<uint16_t>(rand()),
             .priceLevelSize = static_cast<uint64_t>(rand()),
             .timeOfDay = static_cast<uint64_t>(rand())};
 
-        std::memcpy(m_trade.symbol, marketPacket::generateRandomSymbol().c_str(), marketPacket::SYMBOL_LENGTH);
-        std::memcpy(m_quote.symbol, marketPacket::generateRandomSymbol().c_str(), marketPacket::SYMBOL_LENGTH);
+        std::memcpy(m_trade.symbol, generateRandomSymbol().c_str(), SYMBOL_LENGTH);
+        std::memcpy(m_quote.symbol, generateRandomSymbol().c_str(), SYMBOL_LENGTH);
 
         m_state = state_t::WRITE_HEADER;
     };
 
-    const std::optional<std::string> &marketPacketGenerator_t::generatePackets(size_t numPackets, size_t numMaxUpdates)
+    const std::optional<failReason_t> &marketPacketGenerator_t::generatePackets(size_t numPackets, size_t numMaxUpdates)
     {
         resetPerRunVariables(numPackets, numMaxUpdates);
 
@@ -100,7 +100,7 @@ namespace marketPacket
             default:
             {
                 assert(false);
-                m_failReason.emplace("Invalid state. How?");
+                m_failReason.emplace(INVALID_STATE);
                 return;
             }
             }
@@ -109,7 +109,7 @@ namespace marketPacket
 
     void marketPacketGenerator_t::uninitialized()
     {
-        m_failReason.emplace("Generator is uninitialized");
+        m_failReason.emplace(UNINITIALIZED);
         return;
     };
 
@@ -122,11 +122,11 @@ namespace marketPacket
 
         // This is kind of an annoying write you can't easily pack into the other writes
         m_ph.numMarketUpdates = m_numUpdates;
-        m_ph.packetLength = sizeof(marketPacket::packetHeader_t) + m_numUpdates * sizeof(marketPacket::trade_t);
+        m_ph.packetLength = sizeof(packetHeader_t) + m_numUpdates * sizeof(trade_t);
 
         if (!(m_oStream->write(reinterpret_cast<char *>(&m_ph), sizeof(m_ph))))
         {
-            m_failReason.emplace("writeHeader failed");
+            m_failReason.emplace(HEADER_WRITE_FAILED);
             return;
         }
 
@@ -150,7 +150,7 @@ namespace marketPacket
 
         if (!(m_oStream->write(reinterpret_cast<char *>(m_updates.data()), numUpdatesToGenerate * sizeof(trade_t))))
         {
-            m_failReason.emplace("Update write failed");
+            m_failReason.emplace(UPDATE_WRITE_FAILED);
             return;
         }
 
@@ -162,7 +162,7 @@ namespace marketPacket
         // Due to the way the struct is constructed, this number needs to stay in a certain range or we can't interpret it
         if (numMaxUpdates > MAX_UPDATES_ALLOWED_IN_PACKET)
         {
-            m_failReason.emplace("Can't request that many updates in a packet");
+            m_failReason.emplace(TOO_MANY_UPDATES);
             return;
         }
 

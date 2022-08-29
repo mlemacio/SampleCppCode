@@ -1,6 +1,10 @@
 #pragma once
 
+#include <assert.h>
 #include <random>
+
+#include "marketPacketStrings.h"
+
 
 namespace marketPacket
 {
@@ -56,11 +60,13 @@ namespace marketPacket
     constexpr const size_t UPDATES_IN_WRITE_BUF = WRITE_BUFFER_SIZE / sizeof(trade_t);
     constexpr const size_t MAX_UPDATES_ALLOWED_IN_PACKET = (std::numeric_limits<decltype(marketPacket::packetHeader_t::packetLength)>::max() / UPDATE_SIZE) - 1;
 
-    static_assert(READ_BUFFER_SIZE % UPDATE_SIZE == 0, "This just isn't going to be good if it's not aligned");
-    static_assert(WRITE_BUFFER_SIZE % UPDATE_SIZE == 0, "This just isn't going to be good if it's not aligned");
+    // Aligned buffers generally make life a lot easier
+    static_assert(READ_BUFFER_SIZE % UPDATE_SIZE == 0);
+    static_assert(WRITE_BUFFER_SIZE % UPDATE_SIZE == 0);
 
-    static_assert(sizeof(quote_t) == UPDATE_SIZE, "All updates need to be the same size");
-    static_assert(sizeof(trade_t) == UPDATE_SIZE, "All updates need to be the same size");
+    // Forcing one size lets us make a lot of assumptions that make things way smoother
+    static_assert(sizeof(quote_t) == UPDATE_SIZE);
+    static_assert(sizeof(trade_t) == UPDATE_SIZE);
 
     /**
      * @brief rand() is awful as a random number generator. Create our own
@@ -75,4 +81,12 @@ namespace marketPacket
      * @return Random SYMBOL_LENGTH length stream
      */
     std::string generateRandomSymbol();
+
+    /**
+     * @brief Transforms raw trade data in human readable format
+     * 
+     * @param t trade ptr
+     * @return std::string How we want the trade should look to a human
+     */
+    std::string generateTradeString(const trade_t *t);
 }

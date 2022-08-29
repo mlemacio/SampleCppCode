@@ -14,18 +14,40 @@ namespace marketPacket
     std::string generateRandomSymbol()
     {
         static constexpr const std::string_view alphanum = "0123456789"
-                                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                                 "abcdefghijklmnopqrstuvwxyz";
+                                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                                           "abcdefghijklmnopqrstuvwxyz";
 
         std::string tmp_s;
         tmp_s.reserve(SYMBOL_LENGTH);
 
         for (int i = 0; i < SYMBOL_LENGTH; i++)
         {
-            // Make sure we don't accidentally use the regular rand()
-            tmp_s += alphanum[marketPacket::rand() % (sizeof(alphanum) - 1)];
+            tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
         }
 
         return tmp_s;
+    }
+
+    std::string generateTradeString(const trade_t *t)
+    {
+        assert(t != nullptr);
+        std::string tradeStr;
+
+        // We *could* make this a compile time computation... but c'mon
+        // sizeof("Trade: ") + SYMBOL_LENGTH +
+        // sizeof(" Size: ") + numDigits(decltype(t->tradeSize)::max())) + 
+        // sizeof(" Price: ") + numDigits(decltype(t->tradePrice)::max()))
+        // Ends up being 47. Just call it 64.
+        tradeStr.reserve(64);
+
+        tradeStr.append("Trade: ");
+        tradeStr.append(t->symbol, SYMBOL_LENGTH); // This one is finicky since the symbol isn't guaranteed to be null-terminated
+        tradeStr.append(" Size: ");
+        tradeStr.append(std::to_string(t->tradeSize));
+        tradeStr.append(" Price: ");
+        tradeStr.append(std::to_string(t->tradePrice));
+        tradeStr.append("\n");
+
+        return tradeStr;
     }
 }
