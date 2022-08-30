@@ -36,8 +36,8 @@ namespace marketPacket
         // We *could* make this a compile time computation... but c'mon
         // sizeof("Trade: ") + SYMBOL_LENGTH +
         // sizeof(" Size: ") + numDigits(decltype(t->tradeSize)::max())) + 
-        // sizeof(" Price: ") + numDigits(decltype(t->tradePrice)::max()))
-        // Ends up being 47. Just call it 64.
+        // sizeof(" Price: ") + numDigits(decltype(t->tradePrice)::max())) = 47
+        // Just call it 64
         tradeStr.reserve(64);
 
         tradeStr.append("Trade: ");
