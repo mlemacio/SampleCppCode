@@ -8,4 +8,3 @@ Possible extensions:
 - Thread Safety / Multiple Concurrent Streams
 - Read / Write optimizations based on hardware
 - Creating config files 
-- Getting rid of "magic strings"
