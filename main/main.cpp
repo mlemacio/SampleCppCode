@@ -9,8 +9,8 @@ constexpr std::string_view GENERATE_PATH = "./input.dat";
 constexpr std::string_view INPUT_PATH = "./input.dat";
 constexpr std::string_view OUTPUT_PATH = "/Users/maciejmleczko/projects/SampleCppCode/output.dat";
 
-constexpr const size_t NUM_PACKETS_TO_GENERATE = 2;
-constexpr const size_t MAX_UPDATES_TO_GENERATE = 10;
+constexpr const size_t NUM_PACKETS = 2;
+constexpr const size_t MAX_UPDATES_PACKET = 10;
 
 int main()
 {
@@ -19,7 +19,7 @@ int main()
         marketPacket::marketPacketGenerator_t mpg(std::make_shared<std::ofstream>(GENERATE_PATH));
         mpg.initialize();
 
-        const std::optional<std::string> &generatorFailReason = mpg.generatePackets(NUM_PACKETS_TO_GENERATE, MAX_UPDATES_TO_GENERATE);
+        const auto &generatorFailReason = mpg.generatePackets(NUM_PACKETS, MAX_UPDATES_PACKET);
         if (generatorFailReason.has_value())
         {
             std::cout << "Reason why we stopped generating early: " << generatorFailReason.value() << std::endl;
@@ -31,10 +31,7 @@ int main()
         marketPacket::marketPacketProcessor_t mpp(std::make_shared<std::ifstream>(INPUT_PATH), std::make_shared<std::ofstream>(OUTPUT_PATH));
         mpp.initialize();
 
-        // Go until we get a reason to stop
-        std::optional<std::string> processorFailReason;
-        processorFailReason = mpp.processNextPacket();
-
+        const auto& processorFailReason = mpp.processNextPacket(NUM_PACKETS);
         if (processorFailReason.has_value())
         {
             std::cout << "Reason we're stopped processing early: " << processorFailReason.value() << std::endl;
