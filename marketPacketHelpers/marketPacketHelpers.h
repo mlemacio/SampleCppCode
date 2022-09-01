@@ -85,6 +85,8 @@ namespace marketPacket
     /**
      * @brief Transforms raw trade data in human readable format
      * 
+     *  NOTE: This function does NOT error check the ptr. Assumes a correctly formed trade is behind that ptr
+     * 
      * @param t trade ptr
      * @return std::string How we want the trade should look to a human
      */
