@@ -5,5 +5,6 @@ cc_library(
     srcs = ["marketPacketHelpers.cpp"],
     hdrs = ["marketPacketHelpers.h", "marketPacketStrings.h"],
     visibility = ["//marketPacketProcessor:__pkg__",
-                  "//marketPacketGenerator:__pkg__"],
+                  "//marketPacketGenerator:__pkg__",
+                  "//marketPacketHelpers/test:__pkg__"],
 )
