@@ -85,9 +85,9 @@ namespace marketPacket
          * @brief Checks if ptr points to something we'd consider a valid update
          *
          * @param updatePtr Ptr into read buffer on what we assume is the start to an update
-         * @return If valid, a tuple containing the length and type of the update
+         * @return If the pointer points to a valid header update
          */
-        std::tuple<uint16_t, updateType_e> isValidUpdatePtr(const std::byte *updatePtr);
+        bool isUpdateValid(const updateHeader_t * uh);
 
         /**
          * @brief Certain variables need to be reset per run and/or per packet

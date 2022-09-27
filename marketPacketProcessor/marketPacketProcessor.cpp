@@ -164,20 +164,19 @@ namespace marketPacket
         while (bufferOffset < validDataInBuffer)
         {
             const std::byte *currBufferPos = m_readBuffer.data() + bufferOffset;
-
-            auto [length, type] = isValidUpdatePtr(currBufferPos);
-            if (type == updateType_e::INVALID)
+            const updateHeader_t *uh = reinterpret_cast<const updateHeader_t *>(currBufferPos);
+            if (!isUpdateValid(uh))
             {
                 m_failReason.emplace(UPDATE_POORLY_FORMED);
                 return;
             }
 
             // Mark down we've 'read' an update of somesort
-            bufferOffset += length;
-            m_bodyBytesInterpreted += length;
+            bufferOffset += uh->length;
+            m_bodyBytesInterpreted += uh->length;
             m_numUpdatesRead++;
 
-            switch (type)
+            switch (uh->type)
             {
             case updateType_e::TRADE:
             {
@@ -234,29 +233,25 @@ namespace marketPacket
         m_bodyBytesInterpreted = 0;
     }
 
-    std::tuple<uint16_t, updateType_e> marketPacketProcessor_t::isValidUpdatePtr(const std::byte *updatePtr)
+    bool marketPacketProcessor_t::isUpdateValid(const updateHeader_t * uh)
     {
-        // Kind of by definition, the first 3 bytes have to be the same format
-        const uint16_t length = *(reinterpret_cast<const int16_t *>(updatePtr));
-        const updateType_e type = *(reinterpret_cast<const updateType_e *>(updatePtr + TYPE_OFFSET));
-
         // Is both the length and type something we'd expect?
-        if (length == UPDATE_SIZE && (type == updateType_e::TRADE || type == updateType_e::QUOTE))
+        if (uh->length == UPDATE_SIZE && (uh->type == updateType_e::TRADE || uh->type == updateType_e::QUOTE))
         {
-            return {length, type};
+            return true;
         }
 
-        return {0, updateType_e::INVALID};
+        return false;
     }
 
     /**
-     * std::format (C++20) would do a lot better here if it was available 
+     * std::format (C++20) would do a lot better here if it was available
      */
     void marketPacketProcessor_t::appendTradePtrToStream(const trade_t *t)
     {
         // We're relying that the outputStream knows how to buffer it's own writes
         m_outputStream << generateTradeString(t) << '\n';
-        
+
         // This is just a weird case
         if (!m_outputStream.good())
         {

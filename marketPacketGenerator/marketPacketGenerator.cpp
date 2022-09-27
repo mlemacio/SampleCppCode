@@ -24,15 +24,13 @@ namespace marketPacket
         // And that'd slow down performance by a lot making a random one everytime
         // There are solutions to that, just none of them are simple
         m_trade = trade_t{
-            .length = sizeof(trade_t),
-            .type = updateType_e::TRADE,
+            .updateHeader = {sizeof(trade_t), updateType_e::TRADE},
             .tradeSize = static_cast<uint16_t>(rand()),
             .tradePrice = static_cast<uint64_t>(rand()),
         };
 
         m_quote = quote_t{
-            .length = sizeof(quote_t),
-            .type = updateType_e::QUOTE,
+            .updateHeader = {sizeof(quote_t), updateType_e::QUOTE},
             .priceLevel = static_cast<uint16_t>(rand()),
             .priceLevelSize = static_cast<uint64_t>(rand()),
             .timeOfDay = static_cast<uint64_t>(rand())};

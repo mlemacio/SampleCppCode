@@ -5,7 +5,6 @@
 
 #include "marketPacketStrings.h"
 
-
 namespace marketPacket
 {
     enum class updateType_e : uint8_t
@@ -24,10 +23,15 @@ namespace marketPacket
 
     constexpr const size_t SYMBOL_LENGTH = 5;
 
-    struct quote_t
+    struct updateHeader_t
     {
         uint16_t length;
         updateType_e type;
+    } __attribute__((packed));
+
+    struct quote_t
+    {
+        updateHeader_t updateHeader;
         char symbol[SYMBOL_LENGTH];
         uint16_t priceLevel;
         uint64_t priceLevelSize;
@@ -37,8 +41,7 @@ namespace marketPacket
 
     struct trade_t
     {
-        uint16_t length;
-        updateType_e type;
+        updateHeader_t updateHeader;
         char symbol[SYMBOL_LENGTH];
         uint16_t tradeSize;
         uint64_t tradePrice;
@@ -47,7 +50,8 @@ namespace marketPacket
 
     struct update_t
     {
-        std::byte data[32];
+        updateHeader_t updateHeader;
+        std::byte data[29];
     } __attribute__((packed));
 
     constexpr const size_t TYPE_OFFSET = 2;
@@ -59,6 +63,9 @@ namespace marketPacket
     constexpr const size_t PACKET_HEADER_SIZE = sizeof(packetHeader_t);
     constexpr const size_t UPDATES_IN_WRITE_BUF = WRITE_BUFFER_SIZE / sizeof(trade_t);
     constexpr const size_t MAX_UPDATES_ALLOWED_IN_PACKET = (std::numeric_limits<decltype(marketPacket::packetHeader_t::packetLength)>::max() / UPDATE_SIZE) - 1;
+
+    // Make sure everything is 32 bytes for the sake of simplicity
+    static_assert(sizeof(update_t) == 32);
 
     // Aligned buffers generally make life a lot easier
     static_assert(READ_BUFFER_SIZE % UPDATE_SIZE == 0);
@@ -84,9 +91,9 @@ namespace marketPacket
 
     /**
      * @brief Transforms raw trade data in human readable format
-     * 
+     *
      *  NOTE: This function does NOT error check the ptr. Assumes a correctly formed trade is behind that ptr
-     * 
+     *
      * @param t trade ptr
      * @return std::string How we want the trade should look to a human
      */
