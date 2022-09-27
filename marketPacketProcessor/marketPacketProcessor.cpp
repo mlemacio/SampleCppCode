@@ -7,9 +7,6 @@ namespace marketPacket
 {
     void marketPacketProcessor_t::initialize()
     {
-        assert(m_inputStream != nullptr);
-        assert(m_outputStream != nullptr);
-
         // Make sure this only gets called once
         if (m_state != state_t::UNINITIALIZED)
         {
@@ -27,7 +24,6 @@ namespace marketPacket
 
         runStateMachine();
 
-        m_outputStream->flush();
         return m_failReason;
     }
 
@@ -107,17 +103,17 @@ namespace marketPacket
     void marketPacketProcessor_t::checkStreamValidity()
     {
         // Don't process, just return early
-        if (!m_inputStream->is_open())
+        if (!m_inputStream.is_open())
         {
             m_failReason.emplace(INPUT_STREAM_CLOSED);
             return;
         }
 
         // Do a quick peek to set flags if we're at the end of a file
-        m_inputStream->peek();
-        if (!m_inputStream->good())
+        m_inputStream.peek();
+        if (!m_inputStream.good())
         {
-            if (m_inputStream->eof())
+            if (m_inputStream.eof())
             {
                 m_failReason.emplace(END_OF_FILE);
             }
@@ -132,7 +128,7 @@ namespace marketPacket
     void marketPacketProcessor_t::readHeader()
     {
         // Assume it's a packet header
-        if (!(m_inputStream->read(reinterpret_cast<char *>(&m_packetHeader), PACKET_HEADER_SIZE)))
+        if (!(m_inputStream.read(reinterpret_cast<char *>(&m_packetHeader), PACKET_HEADER_SIZE)))
         {
             m_failReason.emplace(PACKET_HEADER_READ_FAILED);
             return;
@@ -156,7 +152,7 @@ namespace marketPacket
         size_t validDataInBuffer = (bytesLeft < READ_BUFFER_SIZE) ? bytesLeft : READ_BUFFER_SIZE;
 
         // Read what needs to be read
-        if (!(m_inputStream->read(reinterpret_cast<char *>(m_readBuffer.data()), validDataInBuffer)).good())
+        if (!(m_inputStream.read(reinterpret_cast<char *>(m_readBuffer.data()), validDataInBuffer)).good())
         {
             m_failReason.emplace(PACKET_READ_FAILED);
             return;
@@ -259,10 +255,10 @@ namespace marketPacket
     void marketPacketProcessor_t::appendTradePtrToStream(const trade_t *t)
     {
         // We're relying that the outputStream knows how to buffer it's own writes
-        *m_outputStream << generateTradeString(t) << std::endl;
+        m_outputStream << generateTradeString(t) << '\n';
         
         // This is just a weird case
-        if (!m_outputStream->good())
+        if (!m_outputStream.good())
         {
             m_failReason.emplace(TRADE_WRITE_FAILED);
         }

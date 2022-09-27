@@ -2,6 +2,7 @@
 
 #include <array>
 #include <iostream>
+#include <fstream>
 #include <optional>
 #include <vector>
 
@@ -20,7 +21,7 @@ namespace marketPacket
          *
          * @param oStream Where market packets get written to
          */
-        marketPacketGenerator_t(const std::shared_ptr<std::ofstream> &oStream)
+        marketPacketGenerator_t(std::ofstream&& oStream)
             : m_state(state_t::UNINITIALIZED),
               m_failReason(),
               m_numPackets(),
@@ -30,7 +31,7 @@ namespace marketPacket
               m_numUpdatesWritten(),
               m_ph(),
               m_updates(),
-              m_oStream(oStream){};
+              m_oStream(std::move(oStream)){};
 
         /**
          * @brief Sets up class to do work
@@ -91,6 +92,6 @@ namespace marketPacket
         packetHeader_t m_ph;                                  // Header we write to the stream
         std::array<update_t, UPDATES_IN_WRITE_BUF> m_updates; // Where we store the updates before we write
 
-        std::shared_ptr<std::ofstream> m_oStream; // Output stream
+        std::ofstream m_oStream; // Output stream
     };
 };

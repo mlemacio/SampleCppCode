@@ -16,7 +16,7 @@ namespace test
    */
   marketPacket::marketPacketProcessor_t createDefaultProcessor()
   {
-    return marketPacket::marketPacketProcessor_t(std::make_shared<std::ifstream>(INPUT_PATH), std::make_shared<std::ofstream>(OUTPUT_PATH));
+    return marketPacket::marketPacketProcessor_t(std::ifstream{INPUT_PATH}, std::ofstream{OUTPUT_PATH});
   }
 
   TEST(marketPacketProcessorTest, noInit)
@@ -33,18 +33,6 @@ namespace test
     marketPacket::marketPacketProcessor_t mpp = createDefaultProcessor();
 
     mpp.initialize();
-    EXPECT_DEATH(mpp.initialize(), "");
-  }
-
-  TEST(marketPacketProcessorTest, noInputStream)
-  {
-    marketPacket::marketPacketProcessor_t mpp(nullptr, std::make_shared<std::ofstream>(OUTPUT_PATH));
-    EXPECT_DEATH(mpp.initialize(), "");
-  }
-
-  TEST(marketPacketProcessorTest, noOutputStream)
-  {
-    marketPacket::marketPacketProcessor_t mpp(std::make_shared<std::ifstream>(INPUT_PATH), nullptr);
     EXPECT_DEATH(mpp.initialize(), "");
   }
 
@@ -253,7 +241,7 @@ namespace test
     constexpr const size_t NUM_PACKETS_TO_GENERATE = 10000;
 
     {
-      marketPacket::marketPacketGenerator_t mpg(std::make_shared<std::ofstream>(INPUT_PATH));
+      marketPacket::marketPacketGenerator_t mpg(std::ofstream{INPUT_PATH});
       mpg.initialize();
 
       ASSERT_FALSE(mpg.generatePackets(NUM_PACKETS_TO_GENERATE, marketPacket::MAX_UPDATES_ALLOWED_IN_PACKET).has_value());

@@ -12,12 +12,12 @@ namespace test
 
     marketPacket::marketPacketGenerator_t createDefaultGenerator()
     {
-        return marketPacket::marketPacketGenerator_t(std::make_shared<std::ofstream>(GENERATE_PATH));
+        return marketPacket::marketPacketGenerator_t(std::ofstream{GENERATE_PATH});
     }
 
     marketPacket::marketPacketProcessor_t createDefaultProcessor()
     {
-        return marketPacket::marketPacketProcessor_t(std::make_shared<std::ifstream>(GENERATE_PATH), std::make_shared<std::ofstream>(OUTPUT_PATH));
+        return marketPacket::marketPacketProcessor_t(std::ifstream{GENERATE_PATH}, std::ofstream{OUTPUT_PATH});
     }
 
     TEST(marketPacketGeneratorTest, noInit)
@@ -31,12 +31,6 @@ namespace test
         marketPacket::marketPacketGenerator_t mpg = createDefaultGenerator();
         mpg.initialize();
 
-        EXPECT_DEATH(mpg.initialize(), "");
-    }
-
-    TEST(marketPacketGeneratorTest, noOutputStream)
-    {
-        marketPacket::marketPacketGenerator_t mpg = marketPacket::marketPacketGenerator_t(nullptr);
         EXPECT_DEATH(mpg.initialize(), "");
     }
 

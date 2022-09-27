@@ -16,7 +16,7 @@ int main()
 {
     // Generate packets
     {
-        marketPacket::marketPacketGenerator_t mpg(std::make_shared<std::ofstream>(GENERATE_PATH));
+        marketPacket::marketPacketGenerator_t mpg(std::ofstream{GENERATE_PATH});
         mpg.initialize();
 
         const auto &generatorFailReason = mpg.generatePackets(NUM_PACKETS, MAX_UPDATES_PACKET);
@@ -28,7 +28,7 @@ int main()
 
     // Process all the packets our input stream gives us
     {
-        marketPacket::marketPacketProcessor_t mpp(std::make_shared<std::ifstream>(INPUT_PATH), std::make_shared<std::ofstream>(OUTPUT_PATH));
+        marketPacket::marketPacketProcessor_t mpp(std::ifstream{INPUT_PATH}, std::ofstream{OUTPUT_PATH});
         mpp.initialize();
 
         const auto& processorFailReason = mpp.processNextPacket(NUM_PACKETS);

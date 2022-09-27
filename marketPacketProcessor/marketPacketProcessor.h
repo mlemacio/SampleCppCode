@@ -23,7 +23,7 @@ namespace marketPacket
          * @param iStream   Input stream, where we get our data from
          * @param oStream   Output stream, where to write the interpreted updates
          */
-        marketPacketProcessor_t(const std::shared_ptr<std::ifstream> &iStream, const std::shared_ptr<std::ofstream> &oStream)
+        marketPacketProcessor_t(std::ifstream&& iStream, std::ofstream&& oStream)
             : m_state(state_t::UNINITIALIZED),
               m_failReason(),
               m_numPacketsToProcess(),
@@ -34,8 +34,8 @@ namespace marketPacket
               m_packetHeader(),
               m_readBuffer(),
               m_tradeLocs(),
-              m_inputStream(iStream),
-              m_outputStream(oStream){};
+              m_inputStream(std::move(iStream)),
+              m_outputStream(std::move(oStream)){};
 
         /**
          * @brief Sets up the processor for use. Processor won't work unless this is called
@@ -102,7 +102,7 @@ namespace marketPacket
          */
         void appendTradePtrToStream(const trade_t *t);
 
-        state_t m_state;                         // Current state of processor
+        state_t m_state;                          // Current state of processor
         std::optional<failReason_t> m_failReason; // If processNextPacket() returns false, the reason
 
         std::size_t m_numPacketsProcessed;           // In this run, how many packets have we seen so far
@@ -117,7 +117,7 @@ namespace marketPacket
         std::array<std::byte, READ_BUFFER_SIZE> m_readBuffer; // Where we read parts of the packet body into
         std::vector<const std::byte *> m_tradeLocs;           // Locations, by ptr, of trades we need to interpret
 
-        std::shared_ptr<std::ifstream> m_inputStream;  // Input stream
-        std::shared_ptr<std::ofstream> m_outputStream; // Output stream
+        std::ifstream m_inputStream;  // Input stream
+        std::ofstream m_outputStream; // Output stream
     };
 };

@@ -12,8 +12,6 @@ namespace marketPacket
 
     void marketPacketGenerator_t::initialize()
     {
-        assert(m_oStream != nullptr);
-
         // Make sure this only gets called once
         if (m_state != state_t::UNINITIALIZED)
         {
@@ -51,7 +49,6 @@ namespace marketPacket
 
         runStateMachine();
 
-        m_oStream->flush();
         return m_failReason;
     };
 
@@ -124,7 +121,7 @@ namespace marketPacket
         m_ph.numMarketUpdates = m_numUpdates;
         m_ph.packetLength = sizeof(packetHeader_t) + m_numUpdates * sizeof(trade_t);
 
-        if (!(m_oStream->write(reinterpret_cast<char *>(&m_ph), sizeof(m_ph))))
+        if (!(m_oStream.write(reinterpret_cast<char *>(&m_ph), sizeof(m_ph))))
         {
             m_failReason.emplace(HEADER_WRITE_FAILED);
             return;
@@ -148,7 +145,7 @@ namespace marketPacket
             memcpy(&m_updates[i], srcPtr, UPDATE_SIZE);
         }
 
-        if (!(m_oStream->write(reinterpret_cast<char *>(m_updates.data()), numUpdatesToGenerate * sizeof(trade_t))))
+        if (!(m_oStream.write(reinterpret_cast<char *>(m_updates.data()), numUpdatesToGenerate * sizeof(trade_t))))
         {
             m_failReason.emplace(UPDATE_WRITE_FAILED);
             return;
