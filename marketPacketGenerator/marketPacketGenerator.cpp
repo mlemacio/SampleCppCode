@@ -143,7 +143,7 @@ namespace marketPacket
             memcpy(&m_updates[i], srcPtr, UPDATE_SIZE);
         }
 
-        if (!(m_oStream.write(reinterpret_cast<char *>(m_updates.data()), numUpdatesToGenerate * sizeof(trade_t))))
+        if (!(m_oStream.write(reinterpret_cast<char *>(m_updates.data()), numUpdatesToGenerate * sizeof(update_t))))
         {
             m_failReason.emplace(UPDATE_WRITE_FAILED);
             return;

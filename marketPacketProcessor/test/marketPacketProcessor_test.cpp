@@ -65,10 +65,10 @@ namespace test
   TEST(marketPacketProcessorTest, badUpdateLength)
   {
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::trade_t), 1};
+
+    // Anything but marketPacket::UPDATE_SIZE (32) shouldn't be accepted
     marketPacket::trade_t trade{
-        .length = 12,                              // Anything but marketPacket::UPDATE_SIZE (32) shouldn't be accepted
-        .type = marketPacket::updateType_e::TRADE, // Make sure we don't reject because of the type
-    };
+        .updateHeader = {12, marketPacket::updateType_e::TRADE}};
 
     {
       std::ofstream genStream(INPUT_PATH);
@@ -86,9 +86,7 @@ namespace test
   {
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::trade_t), 1};
     marketPacket::trade_t trade{
-        .length = marketPacket::UPDATE_SIZE,         // Make sure we don't reject becuase of the length
-        .type = marketPacket::updateType_e::INVALID, // Bad type
-    };
+        .updateHeader = {marketPacket::UPDATE_SIZE, marketPacket::updateType_e::INVALID}};
 
     {
       std::ofstream genStream(INPUT_PATH);
@@ -110,11 +108,11 @@ namespace test
 
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::trade_t), 1};
     marketPacket::trade_t trade{
-        .length = sizeof(marketPacket::trade_t),
-        .type = marketPacket::updateType_e::TRADE,
+        .updateHeader = {marketPacket::UPDATE_SIZE, marketPacket::updateType_e::TRADE},
         .tradeSize = randomTradeSize,
         .tradePrice = randomTradePrice,
     };
+
     std::memcpy(trade.symbol, randomSymbol.c_str(), marketPacket::SYMBOL_LENGTH);
 
     // This is the string we expect to get back with these values
@@ -149,8 +147,7 @@ namespace test
   {
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::quote_t), 1};
     marketPacket::quote_t quote{
-        .length = sizeof(marketPacket::quote_t),
-        .type = marketPacket::updateType_e::QUOTE,
+        .updateHeader = {sizeof(marketPacket::quote_t), marketPacket::updateType_e::QUOTE},
     };
 
     {
@@ -185,8 +182,7 @@ namespace test
     // This is the string we expect to get back with these values
     marketPacket::packetHeader_t ph{sizeof(marketPacket::packetHeader_t) + sizeof(marketPacket::trade_t), 1};
     marketPacket::trade_t trade{
-        .length = sizeof(marketPacket::trade_t),
-        .type = marketPacket::updateType_e::TRADE,
+        .updateHeader = {sizeof(marketPacket::trade_t), marketPacket::updateType_e::TRADE},
         .tradeSize = randomTradeSize,
         .tradePrice = randomTradePrice,
     };
