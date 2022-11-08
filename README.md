@@ -1,7 +1,7 @@
 # SampleCppCode
 An example written specifically for employers. 
 
-A basic serializer/deserializer example in the form of a market data generation built on top of Bazel. 
+A basic serializer/deserializer example in the form of a market data generator/processor built on top of Bazel. 
 
 Possible extensions:
 - Logging (Multiple Levels)
